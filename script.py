@@ -1,81 +1,154 @@
 import json
 from datetime import datetime
+from collections import defaultdict
 
 # Cargar datos
 with open("dataclean.json", "r") as f:
     data = json.load(f)
 
-# Funciones base
+# Filtrar por curso escolar (septiembre a junio)
+def filter_by_school_year(data):
+    filtered = []
+    for item in data:
+        fecha = item.get("date")
+        if not fecha:
+            continue
+        d = datetime.strptime(fecha, "%Y-%m-%d")
+        if 9 <= d.month <= 12 or 1 <= d.month <= 6:
+            filtered.append(item)
+    return filtered
+
+# Filtrar por categoría
 def filter_by_category(data, category):
-    return [item for item in data if item["category"] == category]
+    return [item for item in data if item.get("category") == category]
 
-def filter_by_date_range(data, start, end):
-    start_dt = datetime.strptime(start, "%Y-%m-%d")
-    end_dt = datetime.strptime(end, "%Y-%m-%d")
-    return [item for item in data if item["date"] and start_dt <= datetime.strptime(item["date"], "%Y-%m-%d") <= end_dt]
-
-# Funciones de cálculo
+# Total consumo
 def total_consumption(data):
-    return sum(float(item.get("consumption") or 0) for item in data)
+    total = 0
+    for item in data:
+        try:
+            total += float(item.get("consumption") or 0)
+        except:
+            continue
+    return total
 
+# Total cantidad (para oficina/limpieza)
 def total_quantity(data):
-    return sum(float(item.get("quantity") or 0) for item in data)
+    total = 0
+    for item in data:
+        try:
+            total += float(item.get("quantity") or 0)
+        except:
+            continue
+    return total
 
-def prediction_next_year(data):
-    days = {d["date"] for d in data if d.get("date")}
-    total = total_consumption(data)
-    avg_per_day = total / len(days) if days else 0
-    return avg_per_day * 365
+# Total coste
+def total_cost(data):
+    total = 0
+    for item in data:
+        try:
+            total += float(item.get("total_import") or 0)
+        except:
+            continue
+    return total
 
-def prediction_next_year_quantity(data):
-    months = {d["date"][:7] for d in data if d.get("date")}
-    total = total_quantity(data)
-    avg_per_month = total / len(months) if months else 0
-    return avg_per_month * 12
+# Media diaria agrupando por día
+def daily_average_global(data):
+    daily_sums = defaultdict(float)
+    for item in data:
+        date_str = item.get("date")
+        if not date_str or not item.get("consumption"):
+            continue
+        try:
+            daily_sums[date_str] += float(item["consumption"])
+        except:
+            continue
+    if not daily_sums:
+        return 0
+    return sum(daily_sums.values()) / len(daily_sums)
 
-# Resultados
-electricity = filter_by_category(data, "pv_electricity")
-next_year_electricity = prediction_next_year(electricity)
-elec_period = filter_by_date_range(electricity, "2024-09-01", "2025-06-30")
-total_elec_period = total_consumption(elec_period)
+# Datos del curso escolar
+school_data = filter_by_school_year(data)
 
-water = filter_by_category(data, "water")
-next_year_water = prediction_next_year(water)
-water_period = filter_by_date_range(water, "2024-09-01", "2025-06-30")
-total_water_period = total_consumption(water_period)
+# Parámetros de estimación
+dias_mes = 30
+meses_curso = 10
 
-office = filter_by_category(data, "office_supply")
-# Agrupar por description
-office_items = {}
+# -------------------- ELECTRICIDAD --------------------
+electricity = filter_by_category(school_data, "pv_electricity")
+total_elec = total_consumption(electricity)
+daily_avg_elec = daily_average_global(electricity)
+cost_total_elec = total_cost(electricity)
+estimacion_mes_elec = daily_avg_elec * dias_mes
+coste_mes_elec = (cost_total_elec / len(set(item["date"] for item in electricity))) * dias_mes if electricity else 0
+estimacion_curso_elec = estimacion_mes_elec * meses_curso
+coste_curso_elec = coste_mes_elec * meses_curso
+
+# -------------------- AGUA --------------------
+water = filter_by_category(school_data, "water")
+total_water = total_consumption(water)
+daily_avg_water = daily_average_global(water)
+cost_total_water = total_cost(water)
+estimacion_mes_agua = daily_avg_water * dias_mes
+coste_mes_agua = (cost_total_water / len(set(item["date"] for item in water))) * dias_mes if water else 0
+estimacion_curso_agua = estimacion_mes_agua * meses_curso
+coste_curso_agua = coste_mes_agua * meses_curso
+
+# -------------------- MATERIAL DE OFICINA --------------------
+office = filter_by_category(school_data, "office_supply")
+office_items = defaultdict(float)
 for item in office:
     desc = item.get("description", "desconocido")
-    if desc not in office_items:
-        office_items[desc] = {"quantity": 0, "period": 0}
-    office_items[desc]["quantity"] += float(item.get("quantity") or 0)
-    if "2024-09-01" <= item["date"] <= "2025-06-30":
-        office_items[desc]["period"] += float(item.get("quantity") or 0)
+    try:
+        office_items[desc] += float(item.get("quantity") or 0)
+    except:
+        continue
+total_office = total_quantity(office)
+office_cost_total = total_cost(office)
+office_days = len(set(item["date"] for item in office))
+office_per_month_qty = total_office / (office_days/30) if office_days else 0
+office_per_month_cost = office_cost_total / (office_days/30) if office_days else 0
 
-cleaning = filter_by_category(data, "cleaning_product")
-cleaning_items = {}
+# -------------------- PRODUCTOS DE LIMPIEZA --------------------
+cleaning = filter_by_category(school_data, "cleaning_product")
+cleaning_items = defaultdict(float)
 for item in cleaning:
     desc = item.get("description", "desconocido")
-    if desc not in cleaning_items:
-        cleaning_items[desc] = {"quantity": 0, "period": 0}
-    cleaning_items[desc]["quantity"] += float(item.get("quantity") or 0)
-    if "2024-09-01" <= item["date"] <= "2025-06-30":
-        cleaning_items[desc]["period"] += float(item.get("quantity") or 0)
+    try:
+        cleaning_items[desc] += float(item.get("quantity") or 0)
+    except:
+        continue
+total_cleaning = total_quantity(cleaning)
+cleaning_cost_total = total_cost(cleaning)
+cleaning_days = len(set(item["date"] for item in cleaning))
+cleaning_per_month_qty = total_cleaning / (cleaning_days/30) if cleaning_days else 0
+cleaning_per_month_cost = cleaning_cost_total / (cleaning_days/30) if cleaning_days else 0
 
-# Mostrar resultados
-print(f"pv_electricity próximo año escolar: {next_year_electricity:.2f} kWh")
-print(f"pv_electricity periodo escolar: {total_elec_period:.2f} kWh\n")
+# -------------------- MOSTRAR RESULTADOS --------------------
+print("Electricidad Fotovoltaica")
+print(f"Total curso escolar: {total_elec:.2f} kWh")
+print(f"Media diaria global: {daily_avg_elec:.2f} kWh/día")
+print(f"Coste total electricidad: {cost_total_elec:.2f} €")
+print(f"Estimación mensual: {estimacion_mes_elec:.2f} kWh, coste: {coste_mes_elec:.2f} €")
+print(f"Estimación curso escolar: {estimacion_curso_elec:.2f} kWh, coste: {coste_curso_elec:.2f} €\n")
 
-print(f"water próximo año escolar: {next_year_water:.2f} L")
-print(f"water periodo escolar: {total_water_period:.2f} L\n")
+print("Agua")
+print(f"Total curso escolar: {total_water:.2f} L")
+print(f"Media diaria global: {daily_avg_water:.2f} L/día")
+print(f"Coste total agua: {cost_total_water:.2f} €")
+print(f"Estimación mensual: {estimacion_mes_agua:.2f} L, coste: {coste_mes_agua:.2f} €")
+print(f"Estimación curso escolar: {estimacion_curso_agua:.2f} L, coste: {coste_curso_agua:.2f} €\n")
 
-print("office_supply (detalle por ítem):")
-for desc, vals in office_items.items():
-    print(f"  {desc}: {vals['quantity']:.2f} uds próximo año escolar, {vals['period']:.2f} uds periodo escolar")
+print("Material de Oficina:")
+for desc, qty in office_items.items():
+    print(f"  {desc}: {qty:.2f} uds")
+print(f"Total materiales de oficina: {total_office:.2f} uds")
+print(f"Estimación mensual: {office_per_month_qty:.2f} uds, coste: {office_per_month_cost:.2f} €")
+print(f"Estimación curso escolar: {total_office:.2f} uds, coste: {office_cost_total:.2f} €\n")
 
-print("\ncleaning_product (detalle por ítem):")
-for desc, vals in cleaning_items.items():
-    print(f"  {desc}: {vals['quantity']:.2f} uds próximo año escolar, {vals['period']:.2f} uds periodo escolar")
+print("Productos de Limpieza:")
+for desc, qty in cleaning_items.items():
+    print(f"  {desc}: {qty:.2f} uds")
+print(f"Total productos de limpieza: {total_cleaning:.2f} uds")
+print(f"Estimación mensual: {cleaning_per_month_qty:.2f} uds, coste: {cleaning_per_month_cost:.2f} €")
+print(f"Estimación curso escolar: {total_cleaning:.2f} uds, coste: {cleaning_cost_total:.2f} €")

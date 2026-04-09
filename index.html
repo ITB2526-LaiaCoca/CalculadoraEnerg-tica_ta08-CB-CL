@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe de Consumos</title>
+</head>
+<body>
+<h1>Informe de Consumos</h1>
+
+<button onclick="calcular()">Calcular Resultados</button>
+
+<a href="reporte.html">Reporte</a>
+
+<div id="resultados"></div>
+
+<script>
+async function calcular() {
+    try {
+        const response = await fetch('dataclean.json');
+        if (!response.ok) throw new Error("No se pudo cargar dataclean.json");
+        const data = await response.json();
+        mostrarResultados(data);
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
+}
+
+function filterByCategory(data, category) {
+    return data.filter(item => item.category === category);
+}
+
+function filterBySchoolYear(data) {
+    return data.filter(item => {
+        if (!item.date) return false;
+        const month = new Date(item.date).getMonth() + 1;
+        return month >= 9 || month <= 6;
+    });
+}
+
+function totalConsumption(data) {
+    return data.reduce((sum, item) => sum + (parseFloat(item.consumption) || 0), 0);
+}
+
+function totalQuantity(data) {
+    return data.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0);
+}
+
+function totalCost(data) {
+    return data.reduce((sum, item) => sum + ((parseFloat(item.quantity) || 0)*(parseFloat(item.total_import) || 0)), 0);
+}
+
+// Función corregida de media diaria global (1 septiembre - 30 junio)
+function dailyAverageGlobal(data) {
+    if (!data.length) return 0;
+
+    const total = totalConsumption(data);
+
+    // Calcular días del curso escolar
+    const dates = data.filter(item => item.date).map(item => new Date(item.date));
+    if (!dates.length) return 0;
+
+    const minDate = new Date(Math.min(...dates));
+    const maxDate = new Date(Math.max(...dates));
+
+    // Ajustar fechas de inicio y fin del curso escolar
+    let start = new Date(minDate.getFullYear(), 8, 1); // 1 septiembre
+    if (minDate.getMonth() + 1 <= 6) start.setFullYear(minDate.getFullYear() - 1); // si minDate es enero-junio
+    let end = new Date(maxDate.getFullYear(), 5, 30); // 30 junio
+    if (maxDate.getMonth() + 1 >= 9) end.setFullYear(maxDate.getFullYear() + 1); // si maxDate es sept-dic
+
+    const oneDay = 1000 * 60 * 60 * 24;
+    const daysCount = Math.round((end - start) / oneDay) + 1;
+
+    return total / daysCount;
+}
+
+function mostrarResultados(data) {
+    const resultados = document.getElementById('resultados');
+    resultados.innerHTML = '';
+
+    const schoolData = filterBySchoolYear(data);
+
+    // Electricidad
+    const electricity = filterByCategory(schoolData, 'pv_electricity');
+    const total_elec = totalConsumption(electricity);
+    const daily_avg_elec = dailyAverageGlobal(electricity);
+    resultados.innerHTML += `<h2>Electricidad Fotovoltaica</h2>
+        <p>Total curso escolar: ${total_elec.toFixed(2)} kWh</p>
+        <p>Media diaria global: ${daily_avg_elec.toFixed(2)} kWh/día</p>`;
+
+    // Agua
+    const water = filterByCategory(schoolData, 'water');
+    const total_water = totalConsumption(water);
+    const daily_avg_water = dailyAverageGlobal(water);
+    resultados.innerHTML += `<h2>Agua</h2>
+        <p>Total curso escolar: ${total_water.toFixed(2)} L</p>
+        <p>Media diaria global: ${daily_avg_water.toFixed(2)} L/día</p>`;
+
+    // Material de Oficina
+    const office = filterByCategory(schoolData, 'office_supply');
+    const officeItems = {};
+    office.forEach(item => {
+        const desc = item.description || 'desconocido';
+        if (!officeItems[desc]) officeItems[desc] = 0;
+        officeItems[desc] += parseFloat(item.quantity) || 0;
+    });
+    const total_office = totalQuantity(office);
+    const office_cost_total = totalCost(office);
+    const office_days = new Set(office.map(item => item.date));
+    const office_per_month_qty = total_office / (office_days.size/30 || 1);
+    const office_per_month_cost = office_cost_total / (office_days.size/30 || 1);
+
+    let officeHTML = `<h2>Material de Oficina</h2>
+        <p>Total curso escolar: ${total_office.toFixed(2)} uds, coste: ${office_cost_total.toFixed(2)} €</p>
+        <p>Estimación mensual: ${office_per_month_qty.toFixed(2)} uds, coste: ${office_per_month_cost.toFixed(2)} €</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+        <tr><th>Artículo</th><th>Total curso escolar (uds)</th></tr>`;
+    for (const [desc, qty] of Object.entries(officeItems)) {
+        officeHTML += `<tr><td>${desc}</td><td>${qty.toFixed(2)}</td></tr>`;
+    }
+    officeHTML += `</table>`;
+    resultados.innerHTML += officeHTML;
+
+    // Productos de Limpieza
+    const cleaning = filterByCategory(schoolData, 'cleaning_product');
+    const cleaningItems = {};
+    cleaning.forEach(item => {
+        const desc = item.description || 'desconocido';
+        if (!cleaningItems[desc]) cleaningItems[desc] = 0;
+        cleaningItems[desc] += parseFloat(item.quantity) || 0;
+    });
+    const total_cleaning = totalQuantity(cleaning);
+    const cleaning_cost_total = totalCost(cleaning);
+    const cleaning_days = new Set(cleaning.map(item => item.date));
+    const cleaning_per_month_qty = total_cleaning / (cleaning_days.size/30 || 1);
+    const cleaning_per_month_cost = cleaning_cost_total / (cleaning_days.size/30 || 1);
+
+    let cleaningHTML = `<h2>Productos de Limpieza</h2>
+        <p>Total curso escolar: ${total_cleaning.toFixed(2)} uds, coste: ${cleaning_cost_total.toFixed(2)} €</p>
+        <p>Estimación mensual: ${cleaning_per_month_qty.toFixed(2)} uds, coste: ${cleaning_per_month_cost.toFixed(2)} €</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+        <tr><th>Producto</th><th>Total curso escolar (uds)</th></tr>`;
+    for (const [desc, qty] of Object.entries(cleaningItems)) {
+        cleaningHTML += `<tr><td>${desc}</td><td>${qty.toFixed(2)}</td></tr>`;
+    }
+    cleaningHTML += `</table>`;
+    resultados.innerHTML += cleaningHTML;
+}
+</script>
+
+</body>
+</html>
