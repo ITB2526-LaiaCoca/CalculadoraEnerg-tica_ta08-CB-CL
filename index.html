@@ -2,150 +2,349 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Informe de Consumos</title>
+<title>Data Analysis Dashboard</title>
+
+<style>
+body { font-family: monospace; padding: 20px; }
+
+.tabs {
+  display:flex;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.tab {
+  padding:8px 12px;
+  border:1px solid #333;
+  cursor:pointer;
+  background:#eee;
+}
+
+.tab.active {
+  background:#333;
+  color:#fff;
+}
+
+.panel {
+  display:none;
+}
+
+.panel.active {
+  display:block;
+}
+
+details {
+  border:1px solid #ccc;
+  margin-bottom:10px;
+  padding:10px;
+}
+
+summary {
+  cursor:pointer;
+  font-weight:bold;
+}
+
+pre {
+  background:#f5f5f5;
+  padding:10px;
+  overflow:auto;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 25px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  text-align: left;
+}
+
+th {
+  background: #f0f0f0;
+}
+</style>
 </head>
+
 <body>
-<h1>Informe de Consumos</h1>
 
-<button onclick="calcular()">Calcular Resultados</button>
+<div class="tabs">
+  <div class="tab active" onclick="showTab(0)">📊 Análisis</div>
+  <div class="tab" onclick="showTab(1)">📅 Datos crudos</div>
+</div>
 
-<a href="reporte.html">Reporte</a>
+<button onclick="calcular()">Calcular</button>
 
-<div id="resultados"></div>
+<div id="panel0" class="panel active"></div>
+<div id="panel1" class="panel"></div>
 
 <script>
-async function calcular() {
-    try {
-        const response = await fetch('dataclean.json');
-        if (!response.ok) throw new Error("No se pudo cargar dataclean.json");
-        const data = await response.json();
-        mostrarResultados(data);
-    } catch (error) {
-        alert("Error: " + error.message);
+
+let data = [];
+
+async function loadData() {
+  const res = await fetch("dataclean.json");
+  data = await res.json();
+}
+
+function showTab(i) {
+  document.querySelectorAll(".tab").forEach((t,idx)=>{
+    t.classList.toggle("active", idx===i);
+  });
+
+  document.querySelectorAll(".panel").forEach((p,idx)=>{
+    p.classList.toggle("active", idx===i);
+  });
+}
+
+function box(title, explanation, content) {
+  return `
+  <details open>
+    <summary>${title}</summary>
+    <div>
+      <p><b>Explicación:</b> ${explanation}</p>
+      <pre>${content}</pre>
+    </div>
+  </details>`;
+}
+
+// =========================================
+// TABLA DINÁMICA (SIN COLUMNAS VACÍAS)
+// =========================================
+function buildTable(title, rows) {
+
+  if (!rows.length) return "";
+
+  let cols = {
+    date:false,
+    hour:false,
+    description:false,
+    value:false,
+    category:false
+  };
+
+  rows.forEach(r => {
+    if (r.date) cols.date = true;
+    if (r.hour) cols.hour = true;
+    if (r.description) cols.description = true;
+    if (r.value) cols.value = true;
+    if (r.category) cols.category = true;
+  });
+
+  let html = `<h3>${title}</h3><table><tr>`;
+
+  if (cols.date) html += "<th>Fecha</th>";
+  if (cols.hour) html += "<th>Hora</th>";
+  if (cols.description) html += "<th>Descripción</th>";
+  if (cols.value) html += "<th>Valor</th>";
+  if (cols.category) html += "<th>Categoría</th>";
+
+  html += "</tr>";
+
+  rows.forEach(r => {
+    html += "<tr>";
+
+    if (cols.date) html += `<td>${r.date || ""}</td>`;
+    if (cols.hour) html += `<td>${r.hour || ""}</td>`;
+    if (cols.description) html += `<td>${r.description || ""}</td>`;
+    if (cols.value) html += `<td>${r.value || ""}</td>`;
+    if (cols.category) html += `<td>${r.category || ""}</td>`;
+
+    html += "</tr>";
+  });
+
+  html += "</table>";
+  return html;
+}
+
+function calcular() {
+
+  let out = "";
+
+  // ======================================
+  // AGUA + ELECTRICIDAD
+  // ======================================
+  let agua = {};
+  let elec = {};
+  let horas = [];
+
+  data.forEach(i => {
+
+    if (i.category === "water" && i.consumption !== "") {
+      agua[i.date] = (agua[i.date] || 0) + parseFloat(i.consumption);
+      if (i.hour !== "") horas.push(parseFloat(i.consumption));
     }
-}
 
-function filterByCategory(data, category) {
-    return data.filter(item => item.category === category);
-}
-
-function filterBySchoolYear(data) {
-    return data.filter(item => {
-        if (!item.date) return false;
-        const month = new Date(item.date).getMonth() + 1;
-        return month >= 9 || month <= 6;
-    });
-}
-
-function totalConsumption(data) {
-    return data.reduce((sum, item) => sum + (parseFloat(item.consumption) || 0), 0);
-}
-
-function totalQuantity(data) {
-    return data.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0);
-}
-
-function totalCost(data) {
-    return data.reduce((sum, item) => sum + ((parseFloat(item.quantity) || 0)*(parseFloat(item.total_import) || 0)), 0);
-}
-
-// Función corregida de media diaria global (1 septiembre - 30 junio)
-function dailyAverageGlobal(data) {
-    if (!data.length) return 0;
-
-    const total = totalConsumption(data);
-
-    // Calcular días del curso escolar
-    const dates = data.filter(item => item.date).map(item => new Date(item.date));
-    if (!dates.length) return 0;
-
-    const minDate = new Date(Math.min(...dates));
-    const maxDate = new Date(Math.max(...dates));
-
-    // Ajustar fechas de inicio y fin del curso escolar
-    let start = new Date(minDate.getFullYear(), 8, 1); // 1 septiembre
-    if (minDate.getMonth() + 1 <= 6) start.setFullYear(minDate.getFullYear() - 1); // si minDate es enero-junio
-    let end = new Date(maxDate.getFullYear(), 5, 30); // 30 junio
-    if (maxDate.getMonth() + 1 >= 9) end.setFullYear(maxDate.getFullYear() + 1); // si maxDate es sept-dic
-
-    const oneDay = 1000 * 60 * 60 * 24;
-    const daysCount = Math.round((end - start) / oneDay) + 1;
-
-    return total / daysCount;
-}
-
-function mostrarResultados(data) {
-    const resultados = document.getElementById('resultados');
-    resultados.innerHTML = '';
-
-    const schoolData = filterBySchoolYear(data);
-
-    // Electricidad
-    const electricity = filterByCategory(schoolData, 'pv_electricity');
-    const total_elec = totalConsumption(electricity);
-    const daily_avg_elec = dailyAverageGlobal(electricity);
-    resultados.innerHTML += `<h2>Electricidad Fotovoltaica</h2>
-        <p>Total curso escolar: ${total_elec.toFixed(2)} kWh</p>
-        <p>Media diaria global: ${daily_avg_elec.toFixed(2)} kWh/día</p>`;
-
-    // Agua
-    const water = filterByCategory(schoolData, 'water');
-    const total_water = totalConsumption(water);
-    const daily_avg_water = dailyAverageGlobal(water);
-    resultados.innerHTML += `<h2>Agua</h2>
-        <p>Total curso escolar: ${total_water.toFixed(2)} L</p>
-        <p>Media diaria global: ${daily_avg_water.toFixed(2)} L/día</p>`;
-
-    // Material de Oficina
-    const office = filterByCategory(schoolData, 'office_supply');
-    const officeItems = {};
-    office.forEach(item => {
-        const desc = item.description || 'desconocido';
-        if (!officeItems[desc]) officeItems[desc] = 0;
-        officeItems[desc] += parseFloat(item.quantity) || 0;
-    });
-    const total_office = totalQuantity(office);
-    const office_cost_total = totalCost(office);
-    const office_days = new Set(office.map(item => item.date));
-    const office_per_month_qty = total_office / (office_days.size/30 || 1);
-    const office_per_month_cost = office_cost_total / (office_days.size/30 || 1);
-
-    let officeHTML = `<h2>Material de Oficina</h2>
-        <p>Total curso escolar: ${total_office.toFixed(2)} uds, coste: ${office_cost_total.toFixed(2)} €</p>
-        <p>Estimación mensual: ${office_per_month_qty.toFixed(2)} uds, coste: ${office_per_month_cost.toFixed(2)} €</p>
-        <table border="1" cellpadding="5" cellspacing="0">
-        <tr><th>Artículo</th><th>Total curso escolar (uds)</th></tr>`;
-    for (const [desc, qty] of Object.entries(officeItems)) {
-        officeHTML += `<tr><td>${desc}</td><td>${qty.toFixed(2)}</td></tr>`;
+    if (i.category === "pv_electricity" && i.consumption !== "") {
+      elec[i.date] = (elec[i.date] || 0) + parseFloat(i.consumption);
     }
-    officeHTML += `</table>`;
-    resultados.innerHTML += officeHTML;
+  });
 
-    // Productos de Limpieza
-    const cleaning = filterByCategory(schoolData, 'cleaning_product');
-    const cleaningItems = {};
-    cleaning.forEach(item => {
-        const desc = item.description || 'desconocido';
-        if (!cleaningItems[desc]) cleaningItems[desc] = 0;
-        cleaningItems[desc] += parseFloat(item.quantity) || 0;
-    });
-    const total_cleaning = totalQuantity(cleaning);
-    const cleaning_cost_total = totalCost(cleaning);
-    const cleaning_days = new Set(cleaning.map(item => item.date));
-    const cleaning_per_month_qty = total_cleaning / (cleaning_days.size/30 || 1);
-    const cleaning_per_month_cost = cleaning_cost_total / (cleaning_days.size/30 || 1);
+  let mediaAgua =
+    Object.values(agua).reduce((a,b)=>a+b,0)
+    / Object.keys(agua).length;
 
-    let cleaningHTML = `<h2>Productos de Limpieza</h2>
-        <p>Total curso escolar: ${total_cleaning.toFixed(2)} uds, coste: ${cleaning_cost_total.toFixed(2)} €</p>
-        <p>Estimación mensual: ${cleaning_per_month_qty.toFixed(2)} uds, coste: ${cleaning_per_month_cost.toFixed(2)} €</p>
-        <table border="1" cellpadding="5" cellspacing="0">
-        <tr><th>Producto</th><th>Total curso escolar (uds)</th></tr>`;
-    for (const [desc, qty] of Object.entries(cleaningItems)) {
-        cleaningHTML += `<tr><td>${desc}</td><td>${qty.toFixed(2)}</td></tr>`;
+  let mediaElec =
+    Object.values(elec).reduce((a,b)=>a+b,0)
+    / Object.keys(elec).length;
+
+  let mediaHora =
+    horas.reduce((a,b)=>a+b,0) / horas.length;
+
+  let semanas = 39;
+  let diasLectivos = semanas * 5 - 12;
+
+  // ======================================
+  // ANÁLISIS AGUA
+  // ======================================
+  let aguaText = "";
+  for (let d in agua) aguaText += `${d}: ${agua[d]} L\n`;
+
+  out += box(
+    "CONSUMO DE AGUA",
+    "Se suman consumos diarios del trimestre.",
+    aguaText + `\nMedia diaria: ${mediaAgua.toFixed(2)} L`
+  );
+
+  out += box(
+    "MEDIA POR HORA AGUA",
+    "Promedio de consumos con hora registrada.",
+    `Media: ${mediaHora.toFixed(2)} L/h`
+  );
+
+  out += box(
+    "MEDIA SEMANAL AGUA",
+    "Media diaria × 5 y × 7.",
+    `5 días: ${(mediaAgua*5).toFixed(2)} L\n7 días: ${(mediaAgua*7).toFixed(2)} L`
+  );
+
+  // ======================================
+  // ELECTRICIDAD
+  // ======================================
+  let elecText = "";
+  for (let d in elec) elecText += `${d}: ${elec[d].toFixed(2)} kWh\n`;
+
+  out += box(
+    "CONSUMO ELECTRICIDAD",
+    "Suma diaria del trimestre.",
+    elecText + `\nMedia diaria: ${mediaElec.toFixed(2)} kWh`
+  );
+
+  out += box(
+    "MEDIA SEMANAL ELECTRICIDAD",
+    "Media diaria × 5 y × 7.",
+    `5 días: ${(mediaElec*5).toFixed(2)} kWh\n7 días: ${(mediaElec*7).toFixed(2)} kWh`
+  );
+
+  // ======================================
+  // CURSO
+  // ======================================
+  out += box(
+    "CURSO ESCOLAR AJUSTADO",
+    "Estimación anual basada en media trimestral.",
+    `Días: ${diasLectivos}\nAgua: ${(diasLectivos*mediaAgua).toFixed(2)} L\nElectricidad: ${(diasLectivos*mediaElec).toFixed(2)} kWh`
+  );
+
+  // ======================================
+  // OFFICE + CLEANING (TRIMESTRAL GLOBAL)
+  // ======================================
+  let office = {};
+  let clean = {};
+
+  data.forEach(i => {
+
+    let q = parseFloat(i.quantity || 0);
+    let c = parseFloat(i.net_import || 0);
+
+    if (i.category === "office_supply") {
+      let p = i.description;
+      if (!office[p]) office[p] = {qty:0,cost:0,count:0};
+      office[p].qty += q;
+      office[p].cost += c;
+      office[p].count++;
     }
-    cleaningHTML += `</table>`;
-    resultados.innerHTML += cleaningHTML;
+
+    if (i.category === "cleaning_product") {
+      let p = i.description;
+      if (!clean[p]) clean[p] = {qty:0,cost:0,count:0};
+      clean[p].qty += q;
+      clean[p].cost += c;
+      clean[p].count++;
+    }
+  });
+
+  let officeText = "";
+  for (let p in office) {
+    let d = office[p];
+    let media = d.qty / d.count;
+
+    officeText += `\n${p}\n`;
+    officeText += `Media trimestral: ${media.toFixed(2)} unidades | ${d.cost.toFixed(2)} €\n`;
+    officeText += `Curso (9 meses): ${(media*3).toFixed(2)} unidades | ${(d.cost*3).toFixed(2)} €\n`;
+  }
+
+  let cleanText = "";
+  for (let p in clean) {
+    let d = clean[p];
+    let media = d.qty / d.count;
+
+    cleanText += `\n${p}\n`;
+    cleanText += `Media trimestral: ${media.toFixed(2)} unidades | ${d.cost.toFixed(2)} €\n`;
+    cleanText += `Curso (9 meses): ${(media*3).toFixed(2)} unidades | ${(d.cost*3).toFixed(2)} €\n`;
+  }
+
+  out += box(
+    "OFFICE SUPPLY (TRIMESTRAL GLOBAL)",
+    "Todas las facturas representan un único trimestre completo.",
+    officeText
+  );
+
+  out += box(
+    "CLEANING PRODUCT (TRIMESTRAL GLOBAL)",
+    "Todas las facturas representan un único trimestre completo.",
+    cleanText
+  );
+
+  // ======================================
+  // TABLAS CRUDAS
+  // ======================================
+  let waterRows = [];
+  let elecRows = [];
+  let officeRows = [];
+  let cleanRows = [];
+
+  data.forEach(i => {
+
+    let value = i.consumption || i.quantity || "";
+
+    let row = {
+      date: i.date,
+      hour: i.hour,
+      description: i.description,
+      value: value,
+      category: i.category
+    };
+
+    if (i.category === "water") waterRows.push(row);
+    else if (i.category === "pv_electricity") elecRows.push(row);
+    else if (i.category === "office_supply") officeRows.push(row);
+    else if (i.category === "cleaning_product") cleanRows.push(row);
+  });
+
+  let raw = "";
+  raw += buildTable("💧 Agua", waterRows);
+  raw += buildTable("⚡ Electricidad", elecRows);
+  raw += buildTable("🧾 Office Supply", officeRows);
+  raw += buildTable("🧼 Cleaning Product", cleanRows);
+
+  document.getElementById("panel0").innerHTML = out;
+  document.getElementById("panel1").innerHTML = raw;
 }
+
+loadData();
+
 </script>
 
 </body>
