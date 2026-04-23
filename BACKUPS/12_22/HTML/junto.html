@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <script src="../JS/juntoScript.js" defer></script>
+  <title>Dashboard Energía y Agua</title>
+</head>
+
+<body>
+
+<a href="../index.html">index</a>
+<a href="electricity.html">electricity</a>
+<a href="water.html">water</a>
+
+<h1>Dashboard Energía y Agua</h1>
+
+<hr>
+
+<h2>CALCULADORA</h2>
+
+<label>Fecha inicio:</label>
+<input type="date" id="start">
+
+<label>Fecha fin:</label>
+<input type="date" id="end">
+
+<br><br>
+
+<label>Paneles solares:</label>
+<input type="number" id="panels" value="136">
+
+<hr>
+
+<h3>FACTORES ESTACIONALES</h3>
+
+<!-- INVIERNO -->
+<h4>Invierno</h4>
+
+<label>Iluminación</label>
+<select id="inv_ilum">
+  <option value="-0.10">Menos iluminación</option>
+  <option value="0" selected>Normal</option>
+  <option value="0.10">Más iluminación</option>
+</select>
+
+<label>Calefacción</label>
+<select id="inv_heat">
+  <option value="0">No</option>
+  <option value="0.10">Baja</option>
+  <option value="0.20" selected>Media</option>
+  <option value="0.35">Alta</option>
+</select>
+
+<label>Aire acondicionado</label>
+<select id="inv_ac">
+  <option value="0" selected>No</option>
+  <option value="0.10">Bajo</option>
+  <option value="0.20">Medio</option>
+  <option value="0.35">Alto</option>
+</select>
+
+<br><br>
+
+<!-- PRIMAVERA -->
+<h4>Primavera</h4>
+
+<label>Iluminación</label>
+<select id="pri_ilum">
+  <option value="-0.10">Menos iluminación</option>
+  <option value="0" selected>Normal</option>
+  <option value="0.10">Más iluminación</option>
+</select>
+
+<label>Calefacción</label>
+<select id="pri_heat">
+  <option value="0" selected>No</option>
+  <option value="0.10">Baja</option>
+  <option value="0.20">Media</option>
+  <option value="0.35">Alta</option>
+</select>
+
+<label>Aire acondicionado</label>
+<select id="pri_ac">
+  <option value="0" selected>No</option>
+  <option value="0.10">Bajo</option>
+  <option value="0.20">Medio</option>
+  <option value="0.35">Alto</option>
+</select>
+
+<br><br>
+
+<!-- VERANO -->
+<h4>Verano</h4>
+
+<label>Iluminación</label>
+<select id="ver_ilum">
+  <option value="-0.10">Menos iluminación</option>
+  <option value="0" selected>Normal</option>
+  <option value="0.10">Más iluminación</option>
+</select>
+
+<label>Calefacción</label>
+<select id="ver_heat">
+  <option value="0" selected>No</option>
+  <option value="0.10">Baja</option>
+  <option value="0.20">Media</option>
+  <option value="0.35">Alta</option>
+</select>
+
+<label>Aire acondicionado</label>
+<select id="ver_ac">
+  <option value="0">No</option>
+  <option value="0.10">Bajo</option>
+  <option value="0.20" selected>Medio</option>
+  <option value="0.35">Alto</option>
+</select>
+
+<br><br>
+
+<!-- OTOÑO -->
+<h4>Otoño</h4>
+
+<label>Iluminación</label>
+<select id="oto_ilum">
+  <option value="-0.10">Menos iluminación</option>
+  <option value="0" selected>Normal</option>
+  <option value="0.10">Más iluminación</option>
+</select>
+
+<label>Calefacción</label>
+<select id="oto_heat">
+  <option value="0">No</option>
+  <option value="0.10" selected>Baja</option>
+  <option value="0.20">Media</option>
+  <option value="0.35">Alta</option>
+</select>
+
+<label>Aire acondicionado</label>
+<select id="oto_ac">
+  <option value="0" selected>No</option>
+  <option value="0.10">Bajo</option>
+  <option value="0.20">Medio</option>
+  <option value="0.35">Alto</option>
+</select>
+
+<br><br>
+
+<button onclick="calcularElectricidad()">Electricidad</button>
+<button onclick="calcularAgua()">Agua</button>
+
+<hr>
+
+<pre id="result"></pre>
+
+</body>
+</html>

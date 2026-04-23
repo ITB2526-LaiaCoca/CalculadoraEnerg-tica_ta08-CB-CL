@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <script src="../JS/electricityScript.js" defer></script>
+  <title>Electricity</title>
+</head>
+
+<body>
+<a href="../index.html"> index </a>
+<a href="water.html"> water </a>
+<a href="junto.html"> junto </a>
+  <h1>Electricidad</h1>
+
+  <label>Paneles solares:</label>
+  <input type="number" id="panels" value="136" min="0">
+
+  <br><br>
+
+  <label>Fecha inicio:</label>
+  <input type="date" id="start">
+
+  <label>Fecha fin:</label>
+  <input type="date" id="end">
+
+  <br><br>
+
+  <button onclick="calcularElectricidad()">
+    Calcular electricidad
+  </button>
+
+  <pre id="result"></pre>
+</body>
+</html>
