@@ -1,0 +1,50 @@
+/* =========================
+   CALENDARIO
+========================= */
+#calendar {
+  width: fit-content;
+  background: #fafafa;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#daysHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 30px);
+  gap: 4px;
+  text-align: center;
+}
+
+.day {
+  text-align: center;
+  padding: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.day.festivo {
+  background: #ff6b6b;
+  color: white;
+}
+
+.day.selected {
+  outline: 2px solid black;
+}
+
+button.small {
+  font-size: 12px;
+}

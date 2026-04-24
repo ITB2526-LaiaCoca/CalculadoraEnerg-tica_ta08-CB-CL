@@ -384,3 +384,5 @@ for (let k in estacionesLab) {
 
   document.getElementById("result").textContent = out;
 }
+
+

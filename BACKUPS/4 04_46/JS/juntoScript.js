@@ -3,6 +3,11 @@ let data = [];
 let mediaAgua = 0;
 let mediaElec = 0;
 
+let officeTotal = 0;
+let mediaOfficeDiaria = 0;
+let officeInputs = {};
+
+
 function getDatesOrError() {
   const start = new Date(document.getElementById("start").value + "T00:00:00");
   const end = new Date(document.getElementById("end").value + "T00:00:00");
@@ -126,8 +131,6 @@ function getFactor(prefix) {
 async function loadData() {
   const res = await fetch("../dataclean.json");
   data = await res.json();
-
-  buildOfficeSupplies(); // 👈 IMPORTANTE
 
   let agua = {};
   let elec = {};
@@ -429,7 +432,46 @@ data.forEach(i => {
   }
 });
 
+officeTotal = officeSum;
 
+// media curso escolar
+mediaOfficeDiaria = officeTotal / 270;
+
+
+function calcularOffice() {
+
+  const start = new Date(document.getElementById("start").value + "T00:00:00");
+  const end = new Date(document.getElementById("end").value + "T00:00:00");
+
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    document.getElementById("result").textContent =
+      "Por favor, introduce fecha de inicio y fin.";
+    return;
+  }
+
+  if (start > end) {
+    document.getElementById("result").textContent =
+      "La fecha de inicio no puede ser mayor que la de fin.";
+    return;
+  }
+
+  let days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+  let total = mediaOfficeDiaria * days;
+
+  let out = "";
+
+  out += "OFFICE SUPPLY\n\n";
+  out += `Total curso escolar: ${officeTotal.toFixed(2)} €\n`;
+  out += `Media diaria (270 días): ${mediaOfficeDiaria.toFixed(2)} €\n\n`;
+
+  out += `${formatDisplay(start)} → ${formatDisplay(end)}\n`;
+  out += `Días seleccionados: ${days}\n\n`;
+
+  out += `Gasto total: ${mediaOfficeDiaria.toFixed(2)} × ${days} = ${total.toFixed(2)} €\n`;
+
+  document.getElementById("result").textContent = out;
+}
 
 
 function calcularOffice() {
@@ -441,9 +483,7 @@ function calcularOffice() {
 
   const office = data.filter(d => d.category === "office_supply");
 
-  let totalTrimestral = 0;
-
-  let steps = "";
+  let totalAnual = 0;
 
   office.forEach((item, index) => {
 
@@ -459,61 +499,48 @@ function calcularOffice() {
 
     const unit = netImport / baseQty;
     const unitIVA = unit * 1.21;
-    const subtotal = unitIVA * qtyInput;
 
-    totalTrimestral += subtotal;
-
-    steps += `
-${item.description}
-(${netImport.toFixed(2)} / ${baseQty}) x 1.21 x ${qtyInput} = ${subtotal.toFixed(2)} €
-----------------
-`;
+    totalAnual += unitIVA * qtyInput;
   });
 
-  // 🔥 CAMBIO IMPORTANTE: TRIMESTRE = 90 días
-  const daily = totalTrimestral / 90;
+  const daily = totalAnual / 270;
 
   const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
 
   const result = daily * days;
 
-  document.getElementById("result").textContent =
+let steps = "";
+
+office.forEach((item, index) => {
+
+  const input = document.getElementById(`os_${index}`);
+  if (!input) return;
+
+  const qtyInput = parseFloat(input.value || 0);
+
+  const baseQty = parseFloat(item.quantity || 0);
+  const netImport = parseFloat(item.net_import || 0);
+
+  if (baseQty === 0) return;
+
+  const unit = netImport / baseQty;
+  const unitIVA = unit * 1.21;
+  const subtotal = unitIVA * qtyInput;
+
+  steps += `
+${item.description}
+${unitIVA.toFixed(2)} × ${qtyInput} = ${subtotal.toFixed(2)} € 
+----------------`;
+});
+
+document.getElementById("result").textContent =
 `${steps}
 
 ============================
-TOTAL TRIMESTRE (90 días): ${totalTrimestral.toFixed(2)} €
+TOTAL CURSO ESCOLAR: ${totalAnual.toFixed(2)} €
 MEDIA DIARIA: ${daily.toFixed(2)} €
 
 DÍAS SELECCIONADOS: ${days}
 
 RESULTADO FINAL: ${daily.toFixed(2)} × ${days} = ${result.toFixed(2)} €`;
-}
-
-function buildOfficeSupplies() {
-
-  const container = document.getElementById("officeContainer");
-  container.innerHTML = "";
-
-  const office = data.filter(d => d.category === "office_supply");
-
-  office.forEach((item, index) => {
-
-    const div = document.createElement("div");
-    div.className = "office-item";
-
-    div.innerHTML = `
-      <label title="${item.net_import}">
-        ${item.description}
-      </label>
-
-      <input
-        type="number"
-        id="os_${index}"
-        value="${item.quantity}"
-        min="0"
-      >
-    `;
-
-    container.appendChild(div);
-  });
 }
