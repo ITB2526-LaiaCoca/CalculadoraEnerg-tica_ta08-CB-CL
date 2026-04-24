@@ -1,0 +1,281 @@
+:root {
+  --bg: #e9f5f3;
+  --card: #ffffff;
+  --primary: #00c896;
+  --primary-dark: #00a57a;
+  --text: #1e2b2b;
+  --muted: #6b8a86;
+  --border: #d7e7e4;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* NAV */
+.nav {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav a {
+  text-decoration: none;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+/* TITULO GRANDE */
+h1 {
+  text-align: center;
+  font-size: 3rem;
+  margin: 25px 0;
+  letter-spacing: 2px;
+}
+
+/* CONTENEDOR */
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* SECCIONES */
+.section {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+}
+
+/* BLOQUES MÁS PEQUEÑOS */
+.block {
+  background: #f7fbfa;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* LABELS */
+label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* INPUTS PEQUEÑOS */
+input,
+select {
+  width: 100%;
+  padding: 6px 8px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+  background: white;
+}
+
+/* ESTACIONES MÁS COMPACTAS */
+.estaciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.estacion {
+  background: #f9fcfb;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.estacion h4 {
+  font-size: 13px;
+  color: var(--primary-dark);
+  margin-bottom: 8px;
+}
+
+/* CALENDARIO MÁS SIMPLE */
+#calendar {
+  width: 100%;
+  max-width: 240px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.day {
+  text-align: center;
+  font-size: 10px;
+  padding: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #f3f7f6;
+}
+
+.day.festivo {
+  background: #ff6b6b;
+  color: white;
+}
+
+.day.selected {
+  outline: 1px solid var(--primary);
+}
+
+/* BOTONES */
+button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--primary-dark);
+}
+
+/* ACCIONES */
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+/* RESULTADO */
+#result {
+  background: #f7fbfa;
+  border: 1px solid var(--border);
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+/* ESTILO GENERAL MÁS COMPACTO */
+h3, h4 {
+  font-size: 14px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  .estaciones {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+/* 👉 Office + Cleaning lado a lado */
+.section .block:nth-child(1),
+.section .block:nth-child(2) {
+  grid-column: span 1;
+}
+
+.section:has(#officeContainer),
+.section:has(#cleaningContainer) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* fallback si el navegador no soporta :has */
+@supports not selector(:has(*)) {
+  .section {
+    display: flex;
+    gap: 15px;
+  }
+
+  .section .block {
+    flex: 1;
+  }
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* 🔹 BLOQUE FECHAS + CALENDARIO + PANELES (vertical limpio) */
+.section:first-of-type {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 🔹 GASTOS ESTACIONALES OCUPA TODO */
+.section:nth-of-type(2) {
+  display: block;
+}
+
+/* 🔹 OFFICE + CLEANING EN 2 COLUMNAS */
+.section:nth-of-type(3) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* 🔹 cada bloque más compacto */
+.block {
+  height: fit-content;
+}
+
+/* 🔹 RESPONSIVE */
+@media (max-width: 900px) {
+  .section:nth-of-type(3) {
+    grid-template-columns: 1fr;
+  }
+}

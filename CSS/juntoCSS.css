@@ -1,173 +1,41 @@
-/* RESET */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* BODY */
-body {
-  font-family: system-ui, Arial;
-  background: #0f172a;
-  color: #e5e7eb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-/* NAV */
-.nav {
-  width: 100%;
-  padding: 8px 12px;
-  background: #020617;
-  font-size: 14px;
-}
-
-.nav a {
-  color: #38bdf8;
-  text-decoration: none;
-}
-
-/* TITULO */
-h1 {
-  font-size: 20px;
-  margin: 10px 0;
-}
-
-/* LAYOUT PRINCIPAL */
-.container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 10px;
-  width: 95%;
-  max-width: 1200px;
-  flex-direction: row;
-}
-
-/* BLOQUES */
-.block {
-  background: #020617;
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #1e293b;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
-}
-
-/* INPUTS */
-input, select {
-  padding: 4px;
-  font-size: 12px;
-  border-radius: 5px;
-  border: none;
-  background: #1e293b;
-  color: white;
-}
-
-/* ESTACIONES COMPACTO */
-.estaciones {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.estacion {
-  background: #0f172a;
-  padding: 6px;
-  border-radius: 6px;
-  font-size: 11px;
-}
-
-/* CALENDARIO COMPACTO */
+/* CALENDARIO MÁS SIMPLE */
 #calendar {
-  padding: 6px;
-  border-radius: 8px;
-  background: #020617;
-  border: 1px solid #1e293b;
-  width: fit-content;
+  width: 100%;
+  max-width: 240px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
 }
 
 .cal-header {
   display: flex;
   justify-content: space-between;
   font-size: 12px;
+  font-weight: 700;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(7, 24px);
-  gap: 3px;
-  justify-content: center;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-top: 6px;
 }
 
 .day {
-  padding: 3px;
+  text-align: center;
   font-size: 10px;
+  padding: 4px;
   border-radius: 4px;
   cursor: pointer;
+  background: #f3f7f6;
 }
 
 .day.festivo {
-  background: #ef4444;
+  background: #ff6b6b;
+  color: white;
 }
 
 .day.selected {
-  outline: 1px solid white;
+  outline: 1px solid var(--primary);
 }
-
-/* BOTONES */
-button {
-  padding: 6px 10px;
-  font-size: 12px;
-  border: none;
-  border-radius: 6px;
-  background: #2563eb;
-  color: white;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #1d4ed8;
-}
-
-/* BOTONES PRINCIPALES */
-body > button {
-  margin: 10px 4px;
-}
-
-/* RESULTADO */
-.resultado {
-  width: 95%;
-  display: flex;
-  justify-content: center;
-}
-
-.resultado pre {
-  width: 100%;
-  max-width: 1000px;
-  background: black;
-  color: #00ff88;
-  padding: 10px;
-  font-size: 12px;
-  border-radius: 8px;
-  overflow-x: auto;
-}
-
-/* CONTENEDOR BOTONES */
-.acciones {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin: 10px 0;
-  width: 100%;
-}
-
-/* BOTONES PEQUEÑOS */
-.acciones button {
-  padding: 5px 10px;
-  font-size: 11px;
-  border-radius: 6px;
-}
-
