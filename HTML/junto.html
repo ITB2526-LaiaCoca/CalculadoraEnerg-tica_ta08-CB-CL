@@ -9,27 +9,13 @@
 
 <body>
 
-<header>
+
   <nav class="nav">
     <a href="../index.html">← Volver al Index</a>
   </nav>
 
   <h1>CALCULADORA</h1>
-</header>
 
-    <button onclick="calcularElectricidad()">Electricidad</button>
-    <button onclick="calcularAgua()">Agua</button>
-    <button onclick="calcularOffice()">Office Supplies</button>
-
-
-  <!-- RESULTADO -->
-  <div class="resultado">
-<div class="section">
-    <pre id="result"></pre>
-  </div>
-
-
-</div>
 
 <div class="container">
 
@@ -43,7 +29,8 @@
       <label>Fecha fin:</label>
       <input type="date" id="end">
 
-      <br><br>
+    </div>
+<div class="block">
       <h5>CALENDARIO FESTIVOS</h5>
 
       <div id="calendar">
@@ -62,7 +49,9 @@
 
         <button class="small" onclick="toggleSelected()">Añadir / Quitar festivo</button>
       </div>
-<br>
+  </div>
+
+    <div class="block">
             <label>Paneles solares:</label>
       <input type="number" id="panels" value="136">
     </div>
@@ -190,7 +179,6 @@
   </div>
 </div>
 
-  <!-- SECCIÓN 2: PANEL SOLAR + OFFICE -->
   <div class="section">
     <div class="block">
       <h3>OFFICE SUPPLIES (trimestrales)</h3>
@@ -206,6 +194,20 @@
 
 
 </div>
+
+<div class="acciones">
+  <button onclick="calcularElectricidad()">Electricidad</button>
+  <button onclick="calcularAgua()">Agua</button>
+  <button onclick="calcularOffice()">Office Supplies</button>
+</div>
+
+  <!-- RESULTADO -->
+  <div class="resultado">
+<div class="section">
+    <pre id="result"></pre>
+  </div>
+
+
 
 
 </body>
