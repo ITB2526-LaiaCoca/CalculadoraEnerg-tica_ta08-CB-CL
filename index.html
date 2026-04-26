@@ -1,14 +1,539 @@
 <!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="./CSS/indexCSS.css">
-    <script src="JS/indexScript.js" defer></script>
-    <title>Analisi</title>
-  </head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
-  <body>
-  <a href="HTML/junto.html">junto </a>
-    <div id="output"></div>
-  </body>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="JS/index.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <title>ITB ENERGY CALCULATOR</title>
+
+  <link rel="stylesheet" href="CSS/index.css">
+  <link rel="icon" href="IMG/logo.ico" type="image/x-icon">
+
+  <style>
+    #calendar {
+      width: 260px;
+      font-family: Arial;
+      border: 1px solid #000;
+      padding: 8px;
+    }
+
+    .cal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-top: 8px;
+    }
+
+    .day {
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .day.festivo {
+      background: #9feae1;
+      color: white;
+    }
+
+    .day.selected {
+      outline: 2px solid #000;
+    }
+
+    button.small {
+      font-size: 12px;
+      margin: 2px;
+    }
+  </style>
+</head>
+
+<body class="retro-bg">
+<nav class="nav">
+    <h1>RESOURCE CALCULATOR</h1>
+
+
+<div class="nav-links">
+  <a href="#" onclick="switchTab('calculator')">[CALCULATOR]</a>
+    <a href="#" onclick="switchTab('data')">[DATA]</a>
+  <a href="#" onclick="switchTab('about')">[ABOUT]</a>
+  <a href="#" onclick="switchTab('history')">[HISTORY]</a>
+  <a href="#" onclick="switchTab('measures')">[MEASURES]</a>
+
+</div>
+</nav>
+
+<section id="tab-data" class="tab-content">
+
+  <div class="window">
+
+    <div class="window-title">
+      <span>DATA.LOGS</span>
+      <span class="window-icons">◻ ✕</span>
+    </div>
+
+    <div class="window-content">
+
+      <h2 class="window-title-big">
+        Raw <span class="highlight">Dataset</span>
+      </h2>
+
+      <p class="window-text">
+        Complete visualization of all records loaded from dataclean.json.
+      </p>
+
+<div id="dataContainer"></div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section id="tab-about" class="tab-content">
+
+  <div class="window">
+
+    <div class="window-title">
+      <span>ABOUT_ITB.EXE</span>
+      <span class="window-icons">◻ ✕</span>
+    </div>
+
+    <div class="window-content">
+
+      <div class="about-block">
+        <h2>About Institut Tecnològic de Barcelona (ITB)</h2>
+
+        <p>
+          ITB is a high-performance educational center operating at the forefront of technology and sustainability.
+          We train future IT professionals while promoting an eco-conscious mindset.
+        </p>
+
+        <p>
+          Our facilities function as a "living laboratory": from 24/7 server labs to smart solar panel integration,
+          the center not only teaches technology but actively uses it to improve efficiency.
+        </p>
+      </div>
+   <!-- IMÁGENES -->
+      <div class="about-images">
+        <img src="IMG/itb1.jpg" alt="ITB 1">
+        <img src="IMG/itb2.jpg" alt="ITB 2">
+        <img src="IMG/itb3.png" alt="ITB 3">
+        <img src="IMG/itb4.jpg" alt="ITB 4">
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+<section id="tab-calculator" class="tab-content active">
+
+
+
+
+<!-- ================= RESULT WINDOW ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>RESULTS.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+    <div class="result-buttons">
+      <button onclick="calcularAgua(); handle('water')" style="color:black; background-color: lightskyblue">Water</button>
+      <button onclick="calcularElectricidad(); handle('elec')" style="color:black; background-color: yellow">Electricity</button>
+      <button onclick="calcularOffice(); handle('office')" style="color:black; background-color: orange">Office Supplies</button>
+      <button onclick="calcularCleaning(); handle('cleaning')" style="color:black; background-color: orange">Cleaning Supplies</button>
+      <button id="calculateAllBtn">CALCULATE ALL</button>
+    </div>
+
+    <pre id="result" style="font-size: large;background-color:black; color:limegreen;" class="hidden"></pre>
+
+</div>
+
+
+<!-- ================= SUMMARY ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>RESULTS_SUMMARY.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+  <div class="section hidden" id="summarySection">
+
+    <pre id="summary" style="font-size: large ;border-radius: 10px; background-color:black; color:limegreen;" class></pre>
+
+<div style="display:flex; gap:10px; align-items:center;">
+  <button id="openSavingBtn" onclick="toggleSavingPanel()" class="hidden">
+    Configure Saving Measures →
+  </button>
+
+  <button onclick="resetAll()" style="background:red; color:white; border:2px solid black; padding:4px 8px; cursor:pointer;">
+    RESET
+  </button>
+</div>
+
+</div>
+  </div>
+</div>
+
+<!-- ================= SAVING PANEL ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>SAVING_MEASURES.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+  <div id="savingPanel" class="saving-panel hidden" style="background: #95a1ac; border-width: 1px; border-color:black;">
+
+    <p id="baseCostInfo"></p>
+
+    <div class="measures-grid">
+
+      <div class="category" style="background-color: lightskyblue; border: 2px solid black;">
+        <h4 style="font-weight: bold">WATER</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Efficient Taps (-25%)</span><input type="checkbox" value="water" data-value="0.25"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Leak Control (-15%)</span><input type="checkbox" value="water" data-value="0.15"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Smart Irrigation (-10%)</span><input type="checkbox" value="water" data-value="0.10"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Low-flow Toilets (-20%)</span><input type="checkbox" value="water" data-value="0.20"></label>
+      </div>
+
+      <div class="category" style="background-color: yellow; border: 2px solid black;">
+        <h4 style="font-weight: bold">ELECTRICITY</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Power Saving (-5%)</span><input type="checkbox" value="elec" data-value="0.05"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Auto Sleep (-8%)</span><input type="checkbox" value="elec" data-value="0.08"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Shutdown (-12%)</span><input type="checkbox" value="elec" data-value="0.12"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Cooling (-8%)</span><input type="checkbox" value="elec" data-value="0.10"></label>
+      </div>
+
+      <div class="category" style="background-color: orange; border: 2px solid black;">
+        <h4 style="font-weight: bold">MATERIALS</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Reuse (-30%)</span><input type="checkbox" value="materials" data-value="0.30"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Repair (-20%)</span><input type="checkbox" value="materials" data-value="0.20"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Bulk (-15%)</span><input type="checkbox" value="materials" data-value="0.15"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Digital (-10%)</span><input type="checkbox" value="materials" data-value="0.10"></label>
+      </div>
+
+    </div>
+
+    <br>
+
+    <button onclick="simulateSavings()">Simulate New Scenario</button>
+
+    <div id="savingResult" style="font-size: large;background-color:black; color: limegreen;"></div>
+
+    <div id="chartsWrapper" class="hidden">
+
+      <div class="chart-container">
+        <canvas id="savingsChartWater"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="savingsChartElec"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="savingsChart"></canvas>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= CALCULATOR ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>CALCULATOR.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+  <div id="calculatorPanel" class="calculator-panel" >
+
+    <div class="container" >
+
+      <div class="section" style="  background: #95a1ac; border: 2px black solid;">
+
+        <div class="block">
+
+          <label style="font-weight: bold; font-size: small;">Start date:</label>
+          <input type="date" id="start" value="2025-09-01">
+
+          <label style="font-weight: bold; font-size: small;">End date:</label>
+          <input type="date" id="end" value="2026-06-22"> <br><br>
+
+          <label style="font-weight: bold; font-size: small;">HOLIDAY CALENDAR</label>
+
+          <div id="calendar">
+
+            <div class="cal-header">
+              <button onclick="changeMonth(-1)">◀</button>
+              <div id="monthLabel"></div>
+              <button onclick="changeMonth(1)">▶</button>
+            </div>
+
+            <div class="grid" id="daysHeader">
+              <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+            </div>
+
+            <div class="grid" id="calendarGrid"></div>
+
+            <button class="small" onclick="toggleSelected()">Add / Remove holiday</button>
+          </div>
+<br>
+          <label style="font-weight: bold; font-size: small;">Solar panels:</label>
+          <input type="number" id="panels" value="136">
+
+        </div>
+
+
+<div class="block">
+
+  <label style="font-weight: bold; font-size: small;">SEASONAL COSTS</label>
+
+  <div class="estaciones">
+
+    <div class="estacion">
+      <h4 style="font-weight: bold">Winter</h4>
+
+      <label>Natural lighting</label>
+      <select id="winter_ilum">
+        <option value="-0.10">More</option>
+        <option value="0">Normal</option>
+        <option value="0.10" selected>Less</option>
+      </select>
+
+      <label >Heating</label>
+      <select id="winter_heat">
+        <option value="0">No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35" selected>High</option>
+      </select>
+
+      <label>Air conditioning</label>
+      <select id="winter_ac">
+        <option value="0" selected>No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+    </div>
+
+    <div class="estacion">
+      <h4 style="font-weight: bold">Spring</h4>
+
+      <label>Natural lighting</label>
+      <select id="spring_ilum">
+        <option value="-0.10">More</option>
+        <option value="0" selected>Normal</option>
+        <option value="0.10">Less</option>
+      </select>
+
+      <label>Heating</label>
+      <select id="spring_heat">
+        <option value="0" selected>No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+
+      <label>Air conditioning</label>
+      <select id="spring_ac">
+        <option value="0">No</option>
+        <option value="0.10" selected>Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+    </div>
+
+    <div class="estacion">
+      <h4 style="font-weight: bold">Summer</h4>
+
+      <label>Natural lighting</label>
+      <select id="summer_ilum">
+        <option value="-0.10" selected>More</option>
+        <option value="0">Normal</option>
+        <option value="0.10">Less</option>
+      </select>
+
+      <label>Heating</label>
+      <select id="summer_heat">
+        <option value="0" selected>No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+
+      <label>Air conditioning</label>
+      <select id="summer_ac">
+        <option value="0">No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35" selected>High</option>
+      </select>
+    </div>
+
+    <div class="estacion">
+      <h4 style="font-weight: bold">Autumn</h4>
+
+      <label>Natural lighting</label>
+      <select id="autumn_ilum">
+        <option value="-0.10">More</option>
+        <option value="0" selected>Normal</option>
+        <option value="0.10">Less</option>
+      </select>
+
+      <label>Heating</label>
+      <select id="autumn_heat">
+        <option value="0">No</option>
+        <option value="0.10" selected>Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+
+      <label>Air conditioning</label>
+      <select id="autumn_ac">
+        <option value="0" selected>No</option>
+        <option value="0.10">Low</option>
+        <option value="0.20">Medium</option>
+        <option value="0.35">High</option>
+      </select>
+    </div>
+
+  </div>
+</div>
+
+        <div class="block">
+          <label style="font-weight: bold; font-size: small;">OFFICE SUPPLIES</label>
+          <div id="officeContainer"></div>
+        </div>
+
+        <div class="block">
+          <label style="font-weight: bold; font-size: small;">CLEANING SUPPLIES</label>
+          <div id="cleaningContainer"></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<section id="tab-history" class="tab-content">
+
+  <div class="window">
+
+    <div class="window-title">
+      <span>HISTORICAL DATA.EXE</span>
+      <span class="window-icons">◻ ✕</span>
+    </div>
+
+    <div class="window-content">
+
+      <h2 class="window-title-big">
+        Historical Records <span class="highlight">2026</span>
+      </h2>
+
+      <p class="window-text">
+        Analysis of consumption recorded during the last academic year without optimization measures applied.
+      </p>
+
+      <div class="neu-grid">
+
+        <div class="neu-card">
+          <span class="card-tag">TOTAL ELECTRICITY</span>
+          <div class="card-val" id="hist-electricity">59.839'72 kWh</div>
+        </div>
+
+        <div class="neu-card">
+          <span class="card-tag">WATER CONSUMPTION</span>
+          <div class="card-val" id="hist-water">1.005.988'00 L</div>
+        </div>
+
+        <div class="neu-card">
+          <span class="card-tag">SUPPLIES COST</span>
+          <div class="card-val" id="hist-supplies">2459'19 €</div>
+        </div>
+
+        <div class="neu-card">
+          <span class="card-tag">MAINTENANCE COST</span>
+          <div class="card-val" id="hist-maintenance">4.443'96 €</div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<section id="tab-measures" class="tab-content">
+
+  <div class="window">
+
+    <div class="window-title">
+      <span>MEASURES.EXE</span>
+      <span class="window-icons">◻ ✕</span>
+    </div>
+
+    <div class="window-content">
+
+      <h2 class="window-title-big">
+        Strategy <span class="highlight">Catalog</span>
+      </h2>
+
+      <p class="window-text">
+        Discover how we apply circular economy and technology to reduce environmental impact.
+      </p>
+
+      <div class="measure-grid">
+
+        <div class="measure-card">
+          <div class="measure-icon">♻️</div>
+          <h3>Circular Economy</h3>
+          <p>Repair and reuse of hardware to reduce e-waste.</p>
+        </div>
+
+        <div class="measure-card">
+          <div class="measure-icon">💡</div>
+          <h3>Smart Sensors & Automation</h3>
+          <p>Automatic shutdown of lights and systems when not in use.</p>
+        </div>
+
+        <div class="measure-card">
+          <div class="measure-icon">💧</div>
+          <h3>Water Management</h3>
+          <p>Reuse of rainwater and greywater systems.</p>
+        </div>
+
+        <div class="measure-card">
+          <div class="measure-icon">💻</div>
+          <h3>Green Coding</h3>
+          <p>Software optimization to reduce energy consumption.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+</body>
 </html>
