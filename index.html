@@ -140,121 +140,6 @@
 <section id="tab-calculator" class="tab-content active">
 
 
-
-
-<!-- ================= RESULT WINDOW ================= -->
-<div class="window">
-
-  <div class="window-title">
-    <span>RESULTS.EXE</span>
-    <span class="window-icons">◻ ✕</span>
-  </div>
-
-    <div class="result-buttons">
-      <button onclick="calcularAgua(); handle('water')" style="color:black; background-color: lightskyblue">Water</button>
-      <button onclick="calcularElectricidad(); handle('elec')" style="color:black; background-color: yellow">Electricity</button>
-      <button onclick="calcularOffice(); handle('office')" style="color:black; background-color: orange">Office Supplies</button>
-      <button onclick="calcularCleaning(); handle('cleaning')" style="color:black; background-color: orange">Cleaning Supplies</button>
-      <button id="calculateAllBtn">CALCULATE ALL</button>
-    </div>
-
-    <pre id="result" style="font-size: large;background-color:black; color:limegreen;" class="hidden"></pre>
-
-</div>
-
-
-<!-- ================= SUMMARY ================= -->
-<div class="window">
-
-  <div class="window-title">
-    <span>RESULTS_SUMMARY.EXE</span>
-    <span class="window-icons">◻ ✕</span>
-  </div>
-
-  <div class="section hidden" id="summarySection">
-
-    <pre id="summary" style="font-size: large ;border-radius: 10px; background-color:black; color:limegreen;" class></pre>
-
-<div style="display:flex; gap:10px; align-items:center;">
-  <button id="openSavingBtn" onclick="toggleSavingPanel()" class="hidden">
-    Configure Saving Measures →
-  </button>
-
-  <button onclick="resetAll()" style="background:red; color:white; border:2px solid black; padding:4px 8px; cursor:pointer;">
-    RESET
-  </button>
-</div>
-
-</div>
-  </div>
-</div>
-
-<!-- ================= SAVING PANEL ================= -->
-<div class="window">
-
-  <div class="window-title">
-    <span>SAVING_MEASURES.EXE</span>
-    <span class="window-icons">◻ ✕</span>
-  </div>
-
-  <div id="savingPanel" class="saving-panel hidden" style="background: #95a1ac; border-width: 1px; border-color:black;">
-
-    <p id="baseCostInfo"></p>
-
-    <div class="measures-grid">
-
-      <div class="category" style="background-color: lightskyblue; border: 2px solid black;">
-        <h4 style="font-weight: bold">WATER</h4>
-        <label style="background-color: black;"><span style="color: limegreen;">Efficient Taps (-25%)</span><input type="checkbox" value="water" data-value="0.25"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Leak Control (-15%)</span><input type="checkbox" value="water" data-value="0.15"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Smart Irrigation (-10%)</span><input type="checkbox" value="water" data-value="0.10"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Low-flow Toilets (-20%)</span><input type="checkbox" value="water" data-value="0.20"></label>
-      </div>
-
-      <div class="category" style="background-color: yellow; border: 2px solid black;">
-        <h4 style="font-weight: bold">ELECTRICITY</h4>
-        <label style="background-color: black;"><span style="color: limegreen;">Power Saving (-5%)</span><input type="checkbox" value="elec" data-value="0.05"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Auto Sleep (-8%)</span><input type="checkbox" value="elec" data-value="0.08"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Shutdown (-12%)</span><input type="checkbox" value="elec" data-value="0.12"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Cooling (-8%)</span><input type="checkbox" value="elec" data-value="0.10"></label>
-      </div>
-
-      <div class="category" style="background-color: orange; border: 2px solid black;">
-        <h4 style="font-weight: bold">MATERIALS</h4>
-        <label style="background-color: black;"><span style="color: limegreen;">Reuse (-30%)</span><input type="checkbox" value="materials" data-value="0.30"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Repair (-20%)</span><input type="checkbox" value="materials" data-value="0.20"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Bulk (-15%)</span><input type="checkbox" value="materials" data-value="0.15"></label>
-        <label style="background-color: black;"><span style="color: limegreen;">Digital (-10%)</span><input type="checkbox" value="materials" data-value="0.10"></label>
-      </div>
-
-    </div>
-
-    <br>
-
-    <button onclick="simulateSavings()">Simulate New Scenario</button>
-
-    <div id="savingResult" style="font-size: large;background-color:black; color: limegreen;"></div>
-
-    <div id="chartsWrapper" class="hidden">
-
-      <div class="chart-container">
-        <canvas id="savingsChartWater"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <canvas id="savingsChartElec"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <canvas id="savingsChart"></canvas>
-      </div>
-
-    </div>
-
-  </div>
-</div>
-
-<!-- ================= CALCULATOR ================= -->
 <div class="window">
 
   <div class="window-title">
@@ -419,12 +304,12 @@
 </div>
 
         <div class="block">
-          <label style="font-weight: bold; font-size: small;">OFFICE SUPPLIES</label>
+          <label style="font-weight: bold; font-size: small;">OFFICE SUPPLIES (x quarter)</label>
           <div id="officeContainer"></div>
         </div>
 
         <div class="block">
-          <label style="font-weight: bold; font-size: small;">CLEANING SUPPLIES</label>
+          <label style="font-weight: bold; font-size: small;">CLEANING SUPPLIES (x quarter)</label>
           <div id="cleaningContainer"></div>
         </div>
 
@@ -433,6 +318,125 @@
 
   </div>
 </div>
+
+<!-- ================= RESULT WINDOW ================= -->
+<div class="window" id="resultsWindow">
+
+
+
+
+
+  <div class="window-title">
+    <span>RESULTS.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+    <div class="result-buttons">
+      <button onclick="handle('water')" style="color:black; background-color: lightskyblue">Water</button>
+      <button onclick="handle('elec')" style="color:black; background-color: yellow">Electricity</button>
+      <button onclick="handle('office')" style="color:black; background-color: orange">Office Supplies</button>
+      <button onclick="handle('cleaning')" style="color:black; background-color: orange">Cleaning Supplies</button>
+      <button id="calculateAllBtn">CALCULATE ALL</button>
+    </div>
+
+    <pre id="result" style="font-size: large;background-color:black; color:limegreen;" class="hidden"></pre>
+
+</div>
+
+
+<!-- ================= SUMMARY ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>RESULTS_SUMMARY.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+  <div class="section hidden" id="summarySection">
+
+    <pre id="summary" style="font-size: large ;border-radius: 10px; background-color:black; color:limegreen;" class></pre>
+
+<div style="display:flex; gap:10px; align-items:center;">
+  <button id="openSavingBtn" onclick="toggleSavingPanel()" class="hidden">
+    Configure Saving Measures →
+  </button>
+
+  <button onclick="resetAll()" style="background:red; color:white; border:2px solid black; padding:4px 8px; cursor:pointer;">
+    RESET ALL
+  </button>
+</div>
+
+</div>
+  </div>
+</div>
+
+<!-- ================= SAVING PANEL ================= -->
+<div class="window">
+
+  <div class="window-title">
+    <span>SAVING_MEASURES.EXE</span>
+    <span class="window-icons">◻ ✕</span>
+  </div>
+
+  <div id="savingPanel" class="saving-panel hidden" style="background: #95a1ac; border-width: 1px; border-color:black;">
+
+    <p id="baseCostInfo"></p>
+
+    <div class="measures-grid">
+
+      <div class="category" style="background-color: lightskyblue; border: 2px solid black;">
+        <h4 style="font-weight: bold">WATER</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Efficient Taps (-25%)</span><input type="checkbox" value="water" data-value="0.25"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Leak Control (-15%)</span><input type="checkbox" value="water" data-value="0.15"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Smart Irrigation (-10%)</span><input type="checkbox" value="water" data-value="0.10"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Low-flow Toilets (-20%)</span><input type="checkbox" value="water" data-value="0.20"></label>
+      </div>
+
+      <div class="category" style="background-color: yellow; border: 2px solid black;">
+        <h4 style="font-weight: bold">ELECTRICITY</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Power Saving (-5%)</span><input type="checkbox" value="elec" data-value="0.05"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Auto Sleep (-8%)</span><input type="checkbox" value="elec" data-value="0.08"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Shutdown (-12%)</span><input type="checkbox" value="elec" data-value="0.12"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Cooling (-8%)</span><input type="checkbox" value="elec" data-value="0.10"></label>
+      </div>
+
+      <div class="category" style="background-color: orange; border: 2px solid black;">
+        <h4 style="font-weight: bold">MATERIALS</h4>
+        <label style="background-color: black;"><span style="color: limegreen;">Reuse (-30%)</span><input type="checkbox" value="materials" data-value="0.30"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Repair (-20%)</span><input type="checkbox" value="materials" data-value="0.20"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Bulk (-15%)</span><input type="checkbox" value="materials" data-value="0.15"></label>
+        <label style="background-color: black;"><span style="color: limegreen;">Digital (-10%)</span><input type="checkbox" value="materials" data-value="0.10"></label>
+      </div>
+
+    </div>
+
+    <br>
+
+    <button onclick="simulateSavings()">Simulate New Scenario</button>
+
+    <div id="savingResult" style="font-size: large;background-color:black; color: limegreen;"></div>
+
+    <div id="chartsWrapper" class="hidden">
+
+      <div class="chart-container">
+        <canvas id="savingsChartWater"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="savingsChartElec"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="savingsChart"></canvas>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= CALCULATOR ================= -->
+
 </section>
 
 <section id="tab-history" class="tab-content">

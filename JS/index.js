@@ -48,6 +48,16 @@ function handle(type) {
   document.getElementById("result").classList.remove("hidden");
 
   updateResultBox();
+
+    const results = document.getElementById("resultsWindow");
+
+  if (results) {
+    results.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
 }
 
 function hideResult() {
@@ -75,13 +85,13 @@ function getDatesOrError() {
 
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     document.getElementById("result").textContent =
-      "Por favor, introduce fecha de inicio y fin.";
+      "Please enter valid start and end dates.";
     return null;
   }
 
   if (start > end) {
     document.getElementById("result").textContent =
-      "La a de inicio no puede ser mayor que la de fin.";
+     "The start date cannot be later than the end date.";
     return null;
   }
 
@@ -374,13 +384,13 @@ const end = new Date(document.getElementById("end").value + "T00:00:00");
 
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     document.getElementById("result").textContent =
-      "Por favor, introduce fecha de inicio y fin.";
+      "Please enter valid start and end dates.";
     return;
   }
 
   if (start > end) {
     document.getElementById("result").textContent =
-      "La fecha de inicio no puede ser mayor que la de fin.";
+     "The start date cannot be later than the end date.";
     return;
   }
 
@@ -419,13 +429,13 @@ function calcularElectricidad() {
 
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     document.getElementById("result").textContent =
-      "Por favor, introduce fecha de inicio y fin.";
+      "Please enter valid start and end dates.";
     return;
   }
 
   if (start > end) {
     document.getElementById("result").textContent =
-      "La fecha de inicio no puede ser mayor que la de fin.";
+      "The start date cannot be later than the end date.";
     return;
   }
 
@@ -691,16 +701,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function calculateAll() {
 
+  const startValue = document.getElementById("start").value;
+  const endValue = document.getElementById("end").value;
+
+  if (!startValue || !endValue) {
+    document.getElementById("result").textContent =
+      "Please enter valid start and end dates.";
+    document.getElementById("result").classList.remove("hidden");
+    return;
+  }
+
   // 🔥 ejecutar todo usando TU sistema real
   handle("water");
   handle("elec");
   handle("office");
   handle("cleaning");
 
-  // 🔥 forzar actualización de summary
   updateResultBox();
 
-  // 🔥 abrir summary
   const summarySection = document.getElementById("summarySection");
   if (summarySection) {
     summarySection.classList.remove("hidden");
@@ -710,26 +728,8 @@ function calculateAll() {
 
 
 
-document.getElementById("calculateAllBtn").addEventListener("click", () => {
 
-  // 🔥 ejecuta todos los cálculos
-  calculateWater();
-  calculateElectricity();
-  calculateOffice();
-  calculateCleaning();
 
-  // 🔥 abre summary directamente
-  const summary = document.getElementById("summarySection");
-  if (summary) {
-    summary.classList.remove("hidden");
-  }
-
-  // 🔥 opcional: hacer scroll al resultado
-  document.getElementById("summarySection")?.scrollIntoView({
-    behavior: "smooth"
-  });
-
-});
 function updateResultBox() {
 
   const summarySection = document.getElementById("summarySection");
@@ -783,111 +783,82 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function resetAll() {
 
-  // 🔥 reset datos internos
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("result").textContent = "";
+document.getElementById("result").classList.add("hidden");
+
+  // 🔥 datos globales
   globalData.water = 0;
   globalData.electricity = 0;
   globalData.office = 0;
   globalData.cleaning = 0;
 
-  // =========================
-  // 🧾 RESULTADOS EXE → A 0
-  // =========================
+  activeSection = null;
+  selectedDay = null;
+  currentDate = new Date();
 
-  document.getElementById("result").textContent = "0";
+  // 🔥 inputs
+  document.getElementById("start").value = "";
+  document.getElementById("end").value = "";
+  document.getElementById("panels").value = PANEL_BASE;
 
-  document.getElementById("summary").textContent = `
-WATER: 0 L
-ELECTRICITY: 0 kWh
-OFFICE COSTS: 0 €
-CLEANING COSTS: 0 €
+  // 🔥 UI resultado
+  document.getElementById("result").textContent = "";
 
-TOTAL MONEY: 0 €
-`;
+  // 🔥 summary
+  const summary = document.getElementById("summary");
+  if (summary) summary.textContent = "";
 
-  document.getElementById("savingResult").innerHTML = `
-<strong>WITHOUT MEASURES (1 year):</strong><br>
-Water: 0 L<br>
-Electricity: 0 kWh<br>
-Costs: 0 €<br><br>
+  const summarySection = document.getElementById("summarySection");
+  if (summarySection) summarySection.classList.add("hidden");
 
-<strong>OPTIMIZED (1 year):</strong><br>
-Water: 0 L<br>
-Electricity: 0 kWh<br>
-Costs: 0 €<br><br>
+  const btn = document.getElementById("openSavingBtn");
+  if (btn) btn.classList.add("hidden");
 
-<strong>SAVINGS (1 year):</strong><br>
-Water: 0 L<br>
-Electricity: 0 kWh<br>
-Costs: 0 €<br><br>
+  // 🔥 saving panel
+  document.getElementById("savingPanel")?.classList.add("hidden");
 
-<strong>TOTAL SAVINGS PERCENTAGE:</strong> 0%
-`;
-
-  // 🔥 cerrar panel de saving measures
-  document.getElementById("savingPanel").classList.add("hidden");
-
-  // 🔥 limpiar checks visuales
   document.querySelectorAll("#savingPanel input[type='checkbox']").forEach(c => {
     c.checked = false;
   });
 
-  // 🔥 reset charts
-  if (window.waterChart instanceof Chart) window.waterChart.destroy();
-  if (window.elecChart instanceof Chart) window.elecChart.destroy();
-  if (window.savingsChart instanceof Chart) window.savingsChart.destroy();
+  // 🔥 charts seguros
+  try {
+    if (window.waterChart) window.waterChart.destroy();
+    if (window.elecChart) window.elecChart.destroy();
+    if (window.savingsChart) window.savingsChart.destroy();
+  } catch (e) {
+    console.warn("Charts ya estaban destruidos");
+  }
 
   document.getElementById("chartsWrapper").classList.add("hidden");
 
-  console.log("RESET completo + panel cerrado ✔");
+  console.log("RESET OK ✔");
 }
 
 function toggleSavingPanel() {
   const panel = document.getElementById("savingPanel");
+  const windowBox = document.getElementById("savingWindow");
+
   panel.classList.toggle("hidden");
 
-  const total = globalData.office + globalData.cleaning;
+  if (!panel.classList.contains("hidden")) {
+    windowBox.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
 
+  document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("openSavingBtn");
 
+  if (btn) {
+    btn.addEventListener("click", toggleSavingPanel);
+  }
+});
 }
-function resetAll() {
 
-  // 🔥 reset datos globales
-  globalData.water = 0;
-  globalData.electricity = 0;
-  globalData.office = 0;
-  globalData.cleaning = 0;
 
-  // 🔥 limpiar RESULTADOS.EXE
-  const result = document.getElementById("result");
-  result.textContent = "";
-  result.classList.add("hidden");
-
-  // 🔥 limpiar SUMMARY.EXE
-  const summary = document.getElementById("summary");
-  summary.textContent = "";
-
-  const summarySection = document.getElementById("summarySection");
-  summarySection.classList.add("hidden");
-
-  document.getElementById("openSavingBtn").classList.add("hidden");
-
-  // 🔥 cerrar saving panel
-  const panel = document.getElementById("savingPanel");
-  panel.classList.add("hidden");
-
-  // 🔥 limpiar saving result
-  document.getElementById("savingResult").innerHTML = "";
-
-  // 🔥 cerrar charts
-  document.getElementById("chartsWrapper").classList.add("hidden");
-
-  if (window.waterChart) window.waterChart.destroy();
-  if (window.elecChart) window.elecChart.destroy();
-  if (window.savingsChart) window.savingsChart.destroy();
-
-  // 🔥 actualizar UI
-  updateResultBox();
-}
 function simulateSavings() {
 
   document.getElementById("chartsWrapper").classList.remove("hidden");
@@ -1080,6 +1051,16 @@ requestAnimationFrame(() => {
     });
 
 });
+
+
+const el = document.getElementById("chartsWrapper");
+
+window.scrollTo({
+  top: el.offsetTop + 1300, // ajusta este número
+  behavior: "smooth"
+});
+
+
 }
 
 
