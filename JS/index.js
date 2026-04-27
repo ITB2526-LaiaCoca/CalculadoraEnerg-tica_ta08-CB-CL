@@ -37,9 +37,9 @@ function handle(type) {
   const target = document.getElementById(idMap[type]);
   if (!target) return;
 
-console.log("HANDLE OK:", type);
-hideResult();
-
+  console.log("HANDLE OK:", type);
+  hideResult();
+}
 
 function showResult() {
   const result = document.getElementById("result");
@@ -1215,4 +1215,4 @@ document.addEventListener("DOMContentLoaded", () => {
       hideResult(); // 👈 esto es lo que querías
     });
   }
-});}
+});
