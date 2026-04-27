@@ -25,7 +25,7 @@ function hideAllSections() {
 
 function handle(type) {
 
-  hideAllSections();
+  hideResult(); // 👈 OBLIGATORIO
 
   const idMap = {
     elec: "elecSection",
@@ -35,34 +35,28 @@ function handle(type) {
   };
 
   const target = document.getElementById(idMap[type]);
+  if (!target) return;
 
-  if (target) target.classList.remove("hidden");
+console.log("HANDLE OK:", type);
+hideResult();
 
-  activeSection = type;
 
-  if (type === "elec") calcularElectricidad();
-  if (type === "water") calcularAgua();
-  if (type === "office") calcularOffice();
-  if (type === "cleaning") calcularCleaning();
+function showResult() {
+  const result = document.getElementById("result");
+  if (!result) return;
 
-  document.getElementById("result").classList.remove("hidden");
-
-  updateResultBox();
-
-    const results = document.getElementById("resultsWindow");
-
-  if (results) {
-    results.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  }
-
+  result.classList.remove("hidden");
 }
+
 
 function hideResult() {
-  document.getElementById("result").classList.toggle("hidden");
+  const result = document.getElementById("result");
+  if (!result) return;
+
+  result.classList.add("hidden");
+  result.textContent = "";
 }
+
 
 
 let mediaAgua = 0;
@@ -415,8 +409,7 @@ Total working days = ${work}\n`;
 globalData.water = totalWork;
   updateResultBox();
 
-document.getElementById("result").textContent = out;
-
+showResult(); // 👈 AÑADE ESTO
 }
 
 /* =========================
@@ -507,9 +500,10 @@ TOTAL WORKING DAYS (season adjusted): ${totalEstWork.toFixed(2)} kWh\n\n`;
 
 
 globalData.electricity = totalEstWork;
-document.getElementById("result").textContent = out;
+
 updateResultBox();
 
+showResult(); // 👈 AÑADE ESTO
 }
 
 
@@ -574,6 +568,7 @@ FINAL RESULT: ${daily.toFixed(2)} × ${days} = ${result.toFixed(2)} €`;
 
 updateResultBox();
 
+showResult(); // 👈 AÑADE ESTO
 }
 
 function buildOfficeSupplies() {
@@ -690,6 +685,7 @@ FINAL RESULT: ${daily.toFixed(2)} × ${days} = ${result.toFixed(2)} €`;
 
 updateResultBox();
 
+showResult(); // 👈 AÑADE ESTO
 }
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("calculateAllBtn");
@@ -711,11 +707,10 @@ function calculateAll() {
     return;
   }
 
-  // 🔥 ejecutar todo usando TU sistema real
-  handle("water");
-  handle("elec");
-  handle("office");
-  handle("cleaning");
+calcularAgua();
+calcularElectricidad();
+calcularOffice();
+calcularCleaning();
 
   updateResultBox();
 
@@ -838,24 +833,20 @@ document.getElementById("result").classList.add("hidden");
 
 function toggleSavingPanel() {
   const panel = document.getElementById("savingPanel");
-  const windowBox = document.getElementById("savingWindow");
+
+  if (!panel) {
+    console.warn("savingPanel no existe en el HTML");
+    return;
+  }
 
   panel.classList.toggle("hidden");
 
   if (!panel.classList.contains("hidden")) {
-    windowBox.scrollIntoView({
+    panel.scrollIntoView({
       behavior: "smooth",
       block: "start"
     });
   }
-
-  document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("openSavingBtn");
-
-  if (btn) {
-    btn.addEventListener("click", toggleSavingPanel);
-  }
-});
 }
 
 
@@ -1214,3 +1205,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("openSavingBtn");
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      toggleSavingPanel();
+      hideResult(); // 👈 esto es lo que querías
+    });
+  }
+});}
