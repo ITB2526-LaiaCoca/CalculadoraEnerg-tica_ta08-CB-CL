@@ -25,7 +25,7 @@ function hideAllSections() {
 
 function handle(type) {
 
-  hideResult(); // 👈 OBLIGATORIO
+  hideAllSections();
 
   const idMap = {
     elec: "elecSection",
@@ -35,33 +35,47 @@ function handle(type) {
   };
 
   const target = document.getElementById(idMap[type]);
-  if (!target) return;
 
-  console.log("HANDLE OK:", type);
-  hideResult();
+if (target) target.classList.remove("hidden");
+
+activeSection = type;
+
+if (type === "elec") calcularElectricidad();
+if (type === "water") calcularAgua();
+if (type === "office") calcularOffice();
+if (type === "cleaning") calcularCleaning();
+
+document.getElementById("result").classList.remove("hidden");
+updateResultBox();
+
+const results = document.getElementById("resultsWindow");
+
+if (results) {
+results.scrollIntoView({
+  behavior: "smooth",
+block: "start" });
 }
-
-function showResult() {
-  const result = document.getElementById("result");
-  if (!result) return;
-
-  result.classList.remove("hidden");
 }
-
 
 function hideResult() {
-  const result = document.getElementById("result");
-  if (!result) return;
-
-  result.classList.add("hidden");
-  result.textContent = "";
+  document.getElementById("result").classList.toggle("hidden");
 }
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.getElementById("openSavingBtn");
 
 
-
+});
 let mediaAgua = 0;
 let mediaElec = 0;
+function toggleSavingPanel() {
+  const panel = document.getElementById("savingPanel");
 
+  if (!panel) return;
+
+  panel.classList.toggle("hidden");
+
+  console.log("hidden?", panel.classList.contains("hidden"));
+}
 function switchTab(tab) {
   document.querySelectorAll(".tab-content").forEach(t => {
     t.classList.remove("active");
@@ -409,7 +423,7 @@ Total working days = ${work}\n`;
 globalData.water = totalWork;
   updateResultBox();
 
-showResult(); // 👈 AÑADE ESTO
+document.getElementById("result").textContent = out;
 }
 
 /* =========================
@@ -500,10 +514,9 @@ TOTAL WORKING DAYS (season adjusted): ${totalEstWork.toFixed(2)} kWh\n\n`;
 
 
 globalData.electricity = totalEstWork;
-
+document.getElementById("result").textContent = out;
 updateResultBox();
 
-showResult(); // 👈 AÑADE ESTO
 }
 
 
@@ -568,7 +581,6 @@ FINAL RESULT: ${daily.toFixed(2)} × ${days} = ${result.toFixed(2)} €`;
 
 updateResultBox();
 
-showResult(); // 👈 AÑADE ESTO
 }
 
 function buildOfficeSupplies() {
@@ -685,7 +697,6 @@ FINAL RESULT: ${daily.toFixed(2)} × ${days} = ${result.toFixed(2)} €`;
 
 updateResultBox();
 
-showResult(); // 👈 AÑADE ESTO
 }
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("calculateAllBtn");
@@ -707,10 +718,11 @@ function calculateAll() {
     return;
   }
 
-calcularAgua();
-calcularElectricidad();
-calcularOffice();
-calcularCleaning();
+  // 🔥 ejecutar todo usando TU sistema real
+  handle("water");
+  handle("elec");
+  handle("office");
+  handle("cleaning");
 
   updateResultBox();
 
@@ -779,8 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function resetAll() {
 
   document.getElementById("result").classList.add("hidden");
-  document.getElementById("result").textContent = "";
-document.getElementById("result").classList.add("hidden");
+
 
   // 🔥 datos globales
   globalData.water = 0;
@@ -810,8 +821,7 @@ document.getElementById("result").classList.add("hidden");
   const btn = document.getElementById("openSavingBtn");
   if (btn) btn.classList.add("hidden");
 
-  // 🔥 saving panel
-  document.getElementById("savingPanel")?.classList.add("hidden");
+
 
   document.querySelectorAll("#savingPanel input[type='checkbox']").forEach(c => {
     c.checked = false;
@@ -831,6 +841,7 @@ document.getElementById("result").classList.add("hidden");
   console.log("RESET OK ✔");
 }
 
+
 function toggleSavingPanel() {
   const panel = document.getElementById("savingPanel");
 
@@ -849,7 +860,27 @@ function toggleSavingPanel() {
   }
 }
 
+function toggleSavingPanel() {
+  const panel = document.getElementById("savingPanel");
 
+  panel.classList.toggle("hidden");
+
+  console.log("VISIBLE:", !panel.classList.contains("hidden"));
+}
+
+
+function toggleSavingPanel() {
+  const panel = document.getElementById("savingPanel");
+
+  console.log("CLICK OK", panel);
+
+  if (!panel) {
+    alert("savingPanel NO existe en HTML");
+    return;
+  }
+
+  panel.classList.toggle("hidden");
+}
 function simulateSavings() {
 
   document.getElementById("chartsWrapper").classList.remove("hidden");
@@ -1209,10 +1240,12 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("openSavingBtn");
 
-  if (btn) {
-    btn.addEventListener("click", () => {
-      toggleSavingPanel();
-      hideResult(); // 👈 esto es lo que querías
-    });
-  }
+});
+
+
+const savingPanel = document.getElementById("savingPanel");
+const openSavingBtn = document.getElementById("openSavingBtn");
+
+openSavingBtn.addEventListener("click", () => {
+  savingPanel.classList.toggle("hidden");
 });

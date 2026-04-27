@@ -1760,3 +1760,6 @@ body {
   width: 100%;
   min-height: 220px;
 }
+.hidden {
+  display: none;
+}
